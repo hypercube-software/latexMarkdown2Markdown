@@ -12,8 +12,11 @@
   
 [3 Use Typora](#3-use-typora)  
 [3.1 How to configure](#31-how-to-configure)  
-[3.1.1 Css template for chapter numbering](#311-css-template-for-chapter-numbering)  
-[3.1.2 Typical usage](#312-typical-usage)  
+[3.1.1 Store images in the right folder](#311-store-images-in-the-right-folder)  
+[3.1.2 Css template for chapter numbering](#312-css-template-for-chapter-numbering)  
+  
+  
+[3.2 Typical workflow](#32-typical-workflow)  
 
 
 
@@ -23,7 +26,7 @@
 This little tool produces a nice **README.md** for your Github repository given a **README.tex.md**
 
 - All LaTex sections are converted to SVG an placed in an `./asset` folder.
-- Optionally a table of content can be added, with chapter numbering.
+- Optionally, a table of content can be added, with chapter numbering.
 
 ## 1.2 Usage
 
@@ -129,13 +132,15 @@ Typora is a wonderful markdown WYSIWYG editor supporting LaTex sections.
 
 ## 3.1 How to configure
 
+### 3.1.1 Store images in the right folder
+
 Go in the settings and use the folder `./assets` to store images.
 
 ![image-20200922161641571](assets/image-20200922161641571.png)
 
 Now every time you past an image into Typora, it will go directly to the **asset** folder.
 
-### 3.1.1 Css template for chapter numbering
+### 3.1.2 Css template for chapter numbering
 
 Here is how to enable chapter numbering:
 
@@ -389,7 +394,7 @@ h5 {
 }
 ```
 
-### 3.1.2 Typical usage
+## 3.2 Typical workflow
 
 You git clone in `C:/my-repo-folder`
 
@@ -401,7 +406,7 @@ Run **LatexMarkdown2Markdown** on the folder like this:
 java -jar latexMarkdown2Markdown-1.0-SNAPSHOT.jar -dir C:/my-repo-folder -toc
 ```
 
-It will generate ``C:/my-repo-folder/README.md` with a table of content and convert all LaTex in SVG images in the folder `C:/my-repo-folder/assets/`.
+It will generate `C:/my-repo-folder/README.md` with a table of content and convert all LaTex in SVG images in the folder `C:/my-repo-folder/assets/`.
 
 ```
 INFO:  Generate C:\my-repo-folder\README.md  
@@ -418,6 +423,8 @@ INFO:  3.1 How to configure
 INFO:  3.1.1 Css template for chapter numbering  
 INFO:  3.1.2 Typical usage  
 ```
+
+Of course don't open the generated `README.md` in Typora, you will have two times the chapter numbering.
 
 You can now push the repo on GitHub.
 
