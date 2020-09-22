@@ -13,7 +13,7 @@
 [3 Use Typora](#3-use-typora)  
 [3.1 How to configure](#31-how-to-configure)  
 [3.1.1 Store images in the right folder](#311-store-images-in-the-right-folder)  
-[3.1.2 Css template for chapter numbering](#312-css-template-for-chapter-numbering)  
+[3.1.2 A Css template for chapter numbering](#312-a-css-template-for-chapter-numbering)  
   
   
 [3.2 Typical workflow](#32-typical-workflow)  
@@ -25,7 +25,7 @@
 
 This little tool produces a nice **README.md** for your Github repository given a **README.tex.md**
 
-- All LaTex sections are converted to SVG an placed in an `./asset` folder.
+- All LaTeX sections are converted to SVG an placed in an `./asset` folder.
 - Optionally, a table of content can be added, with chapter numbering.
 
 ## 1.2 Usage
@@ -122,13 +122,13 @@ public class FilesWalker {
 
 ## 2.2 Dependencies
 
-This tool use [Apache Batik](https://xmlgraphics.apache.org/batik/) to generate an SVG file. The SVG content generated from LaTex is performed by [jlatexmath](https://github.com/opencollab/jlatexmath).
+This tool uses [Apache Batik](https://xmlgraphics.apache.org/batik/) to generate an SVG file. The SVG content, generated from LaTeX, is performed by [jlatexmath](https://github.com/opencollab/jlatexmath).
 
-All of this in embeded in the final fat jar.
+All of this in embeded in the final fat jar using [maven-shade-plugin](https://maven.apache.org/plugins/maven-shade-plugin/).
 
 # 3 Use Typora
 
-Typora is a wonderful markdown WYSIWYG editor supporting LaTex sections.
+Typora is a wonderful markdown WYSIWYG editor supporting LaTeX sections.
 
 ## 3.1 How to configure
 
@@ -138,9 +138,9 @@ Go in the settings and use the folder `./assets` to store images.
 
 ![image-20200922161641571](assets/image-20200922161641571.png)
 
-Now every time you past an image into Typora, it will go directly to the **assets** folder.
+Now every time you past an image into Typora, it will go directly to the **assets** folder, the very same location where **latexMarkdown2Markdown** will generate SVG files.
 
-### 3.1.2 Css template for chapter numbering
+### 3.1.2 A Css template for chapter numbering
 
 Here is how to enable chapter numbering:
 
@@ -398,7 +398,7 @@ h5 {
 
 You git clone in `C:/my-repo-folder`
 
-Write `C:/my-repo-folder/README.tex.md` in Typora. LaTex sections are separated by `$$`.
+Write `C:/my-repo-folder/README.tex.md` in Typora. LaTeX sections are separated by `$$`.
 
 Run **LatexMarkdown2Markdown** on the folder like this:
 
@@ -406,7 +406,7 @@ Run **LatexMarkdown2Markdown** on the folder like this:
 java -jar latexMarkdown2Markdown-1.0-SNAPSHOT.jar -dir C:/my-repo-folder -toc
 ```
 
-It will generate `C:/my-repo-folder/README.md` with a table of content and convert all LaTex in SVG images in the folder `C:/my-repo-folder/assets/`.
+It will generate `C:/my-repo-folder/README.md` with a table of content and convert all LaTeX in SVG images in the folder `C:/my-repo-folder/assets/`.
 
 ```
 INFO:  Generate C:\my-repo-folder\README.md  
