@@ -138,7 +138,7 @@ Go in the settings and use the folder `./assets` to store images.
 
 ![image-20200922161641571](assets/image-20200922161641571.png)
 
-Now every time you past an image into Typora, it will go directly to the **asset** folder.
+Now every time you past an image into Typora, it will go directly to the **assets** folder.
 
 ### 3.1.2 Css template for chapter numbering
 
