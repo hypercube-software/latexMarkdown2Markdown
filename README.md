@@ -25,7 +25,7 @@
 
 This little tool produces a nice **README.md** for your Github repository given a **README.tex.md**
 
-- All LaTeX sections are converted to SVG an placed in an `./asset` folder.
+- All LaTeX sections are converted to SVG and placed in an `./assets` folder.
 - Optionally, a table of content can be added, with chapter numbering.
 
 ## 1.2 Usage
