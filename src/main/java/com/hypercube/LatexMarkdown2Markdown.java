@@ -8,13 +8,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
@@ -22,6 +20,7 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.apache.batik.dom.svg.SVGDOMImplementation;
 import org.apache.batik.svggen.SVGGeneratorContext;
@@ -32,56 +31,9 @@ import org.scilab.forge.jlatexmath.TeXIcon;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 
+import com.hypercube.translate.ChapterTranslator;
+
 public class LatexMarkdown2Markdown {
-
-	//
-	// Compute the chapter numbering
-	//
-	private class ChapterCounter {
-		private List<Integer> counters = new ArrayList<>();
-		private int previousSize = 0;
-
-		//
-		// header can be #, ##, ###, or ####
-		// if suddently we jump from # to ### this will raise an exception
-		//
-		public void onNewMarkdownChapter(String header, String chapter) {
-			int depth = header.length();
-			int index = depth - 1; // from 0 to n-1
-			previousSize = counters.size();
-			if (counters.size() == index) {
-				counters.add(1);
-			} else if (counters.size() >= depth) {
-				while (counters.size() != depth) {
-					counters.remove(counters.size() - 1);
-				}
-				counters.set(index, counters.get(index) + 1);
-			} else {
-				throw new RuntimeException("Chapter depth is wrong for: \"" + chapter + "\"");
-			}
-		}
-
-		// return a string in the form "1", "1.2" or "1.2.4"
-		public String getCurrentState() {
-			StringBuffer result = new StringBuffer();
-			for (int i = 0; i < counters.size(); i++) {
-				if (i > 0)
-					result.append(".");
-
-				result.append(counters.get(i));
-			}
-			return result.toString();
-		}
-
-		public int getPreviousDepth() {
-			return previousSize;
-		}
-
-		public int getCurrentDepth() {
-			return counters.size();
-		}
-	}
-
 	//
 	// The result of the SVG generator.
 	// We don't really use it for now.
@@ -92,8 +44,8 @@ public class LatexMarkdown2Markdown {
 		private int height;
 		private String latexCode;
 		private File file;
-		
-		public SVGFormula(int width, int height,String latexCode, File file) {
+
+		public SVGFormula(int width, int height, String latexCode, File file) {
 			super();
 			this.width = width;
 			this.height = height;
@@ -158,100 +110,46 @@ public class LatexMarkdown2Markdown {
 
 			logger.info("Generate " + destPath.toString());
 
-			String content = Files.readString(srcPath, Charset.forName("UTF-8"));
-
-			content = translateLatexSections(srcPath, content);
-
-			if (config.isGenerateToc()) {
-				content = translateChapters(content);
+			try (PrintWriter pw = new PrintWriter(Files.newBufferedWriter(destPath))) {
+				ChapterTranslator ct = new ChapterTranslator();
+				//
+				// first pass, collect chapters and compute their numbers
+				//
+				try (Stream<String> stream = Files.lines(srcPath)) {
+					stream.forEach(ct::collectChapters);
+				}
+				//
+				// generate TOC
+				//
+				pw.append(ct.buildTableOfContent());
+				//
+				// second pass, translate chapters and latex
+				//
+				try (Stream<String> stream = Files.lines(srcPath)) {
+					stream.map(ct::translateLine)
+							.filter(l -> l != null)
+							.map(line -> translateLatexSections(srcPath, line))
+							.forEach(pw::println);
+				}
 			}
-			Files.write(destPath, content.getBytes(Charset.forName("UTF-8")));
-
 		} catch (IOException e) {
 			logger.log(Level.SEVERE, "Unexpected error", e);
 		}
 	}
 
-	//
-	// This cleanup matches what Github do
-	//
-	private String chapterAnchor(String chapter) {
-		return chapter.toLowerCase()
-				.replaceAll("[^a-zA-Z0-9- ]", "")
-				.replaceAll(" ", "-")
-				.replace("---", "--")
-				.replaceAll("-+$", "");
-	}
-
-	private String translateChapters(String content) {
-		StringBuffer translated = new StringBuffer();
-		Pattern chapterSection = Pattern.compile("^(#+)\\s+(.+)$", Pattern.MULTILINE);
-		Matcher m = chapterSection.matcher(content);
-		int pos = 0;
-		ChapterCounter chapterCounter = new ChapterCounter();
-		List<String> chapters = new ArrayList<>();
-		String firstChapter = "";
-		while (m.find(pos)) {
-			int start = m.start();
-			int end = m.end();
-
-			String beforeSection = content.substring(pos, start);
-			translated.append(beforeSection);
-
-			String header = m.group(1);
-			String chapter = m.group(2);
-			chapterCounter.onNewMarkdownChapter(header, chapter);
-
-			if ((chapterCounter.getPreviousDepth() > 2 && chapterCounter.getCurrentDepth() == 2)
-					|| (chapterCounter.getPreviousDepth() > 1 && chapterCounter.getCurrentDepth() == 1)) {
-				chapters.add("");
-			}
-			if (firstChapter.length() == 0) {
-				firstChapter = chapter;
-			} else {
-				translated.append(header + " " + chapterCounter.getCurrentState() + " " + chapter);
-				chapters.add(chapterCounter.getCurrentState() + " " + chapter);
-			}
-			pos = end;
-		}
-		String afterSection = content.substring(pos);
-		translated.append(afterSection);
-
-		logger.info(firstChapter);
-
-		StringBuffer toc = new StringBuffer();
-		toc.append("# " + firstChapter + "\n");
-		toc.append("**Table of content**")
-				.append("\n")
-				.append("\n");
-
-		chapters.forEach(ch -> {
-			logger.info(ch);
-			if (ch.equals("")) {
-				toc.append("  \n"); // force newline
-				toc.append("  \n"); // force newline
-			} else {
-				toc.append("[" + ch + "]");
-				toc.append("(#" + chapterAnchor(ch) + ")");
-				toc.append("  \n"); // force newline
-			}
-		});
-
-		return toc.toString() + "\n\n" + translated.toString();
-	}
-
-	private String translateLatexSections(Path srcPath, String content) {
+	private String translateLatexSections(Path srcPath, String line) {
 		StringBuffer translated = new StringBuffer();
 		// LaTex sections are separated by $$
-		// The regexp is a little bit complex because we must accept a single $ inside the section
+		// The regexp is a little bit complex because we must accept a single $ inside
+		// the section
 		Pattern latexSection = Pattern.compile("\\$\\$(?<latex>([^$]|(\\$[^$]))*)\\$\\$");
-		Matcher m = latexSection.matcher(content);
+		Matcher m = latexSection.matcher(line);
 		int pos = 0;
 		while (m.find(pos)) {
 			int start = m.start();
 			int end = m.end();
 
-			String beforeSection = content.substring(pos, start);
+			String beforeSection = line.substring(pos, start);
 			translated.append(beforeSection);
 
 			String latexCode = m.group("latex");
@@ -270,7 +168,7 @@ public class LatexMarkdown2Markdown {
 
 			pos = end;
 		}
-		String afterSection = content.substring(pos);
+		String afterSection = line.substring(pos);
 		translated.append(afterSection);
 		return translated.toString();
 	}
@@ -308,7 +206,7 @@ public class LatexMarkdown2Markdown {
 				g2.stream(out, false);
 				svgs.flush();
 			}
-			return Optional.of(new SVGFormula(icon.getIconWidth(), icon.getIconHeight(),latexCode,destFile));
+			return Optional.of(new SVGFormula(icon.getIconWidth(), icon.getIconHeight(), latexCode, destFile));
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Unexpected error", e);
 		}
