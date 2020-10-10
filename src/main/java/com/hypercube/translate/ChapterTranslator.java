@@ -83,7 +83,7 @@ public class ChapterTranslator {
 					if (tocType==TocType.TAB_TOC)
 					{
 						for (int i=0;i<ch.getHeader().length()-1;i++)
-							toc.append('\t');
+							toc.append("&nbsp;&nbsp;&nbsp;&nbsp;");
 					}
 					if (chIdx == 0) {
 						toc.append("[" + ch.getNumberedTitle() + "]");
