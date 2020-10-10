@@ -2,16 +2,16 @@
 **Table of content**
 
 [1 latexMarkdown2Markdown in Java 11](#latexmarkdown2markdown-in-java-11)  
-	[1.1 About](#11-about)  
-	[1.2 Usage](#12-usage)  
+&nbsp;&nbsp;&nbsp;&nbsp;[1.1 About](#11-about)  
+&nbsp;&nbsp;&nbsp;&nbsp;[1.2 Usage](#12-usage)  
 [2 Technical notes](#2-technical-notes)  
-	[2.1 Files.Walk() alternative](#21-fileswalk-alternative)  
-	[2.2 Dependencies](#22-dependencies)  
+&nbsp;&nbsp;&nbsp;&nbsp;[2.1 Files.Walk() alternative](#21-fileswalk-alternative)  
+&nbsp;&nbsp;&nbsp;&nbsp;[2.2 Dependencies](#22-dependencies)  
 [3 Use Typora](#3-use-typora)  
-	[3.1 How to configure](#31-how-to-configure)  
-		[3.1.1 Store images in the right folder](#311-store-images-in-the-right-folder)  
-		[3.1.2 A Css template for chapter numbering](#312-a-css-template-for-chapter-numbering)  
-	[3.2 Typical workflow](#32-typical-workflow)  
+&nbsp;&nbsp;&nbsp;&nbsp;[3.1 How to configure](#31-how-to-configure)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[3.1.1 Store images in the right folder](#311-store-images-in-the-right-folder)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[3.1.2 A Css template for chapter numbering](#312-a-css-template-for-chapter-numbering)  
+&nbsp;&nbsp;&nbsp;&nbsp;[3.2 Typical workflow](#32-typical-workflow)  
 
 ## 1.1 About
 
