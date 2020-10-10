@@ -1,25 +1,30 @@
 package com.hypercube;
 
 public class GeneratorConfig {	
+	public enum TocType {
+		NO_TOC,
+		TOC,
+		TAB_TOC
+	};
 	
 	private String hexBackgroundColor; // The format is like HTML: "#RRGGBB"
 	
-	private boolean generateToc;
+	private TocType tocType;
 	
 	private int margin;		
 	
-	public GeneratorConfig(String hexBackgroundColor, boolean generateToc, int margin) {
+	public GeneratorConfig(String hexBackgroundColor, TocType tocType, int margin) {
 		super();
 		this.hexBackgroundColor = hexBackgroundColor;
-		this.generateToc = generateToc;
+		this.tocType = tocType;
 		this.margin = margin;
 	}
 
-	public boolean isGenerateToc() {
-		return generateToc;
+	public TocType getTocType() {
+		return tocType;
 	}
-
-	public int getMargin() {
+	
+	int getMargin() {
 		return margin;
 	}
 

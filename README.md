@@ -1,25 +1,17 @@
 # latexMarkdown2Markdown in Java 11
 **Table of content**
 
-[1.1 About](#11-about)  
-[1.2 Usage](#12-usage)  
-  
-  
+[1 latexMarkdown2Markdown in Java 11](#latexmarkdown2markdown-in-java-11)  
+	[1.1 About](#11-about)  
+	[1.2 Usage](#12-usage)  
 [2 Technical notes](#2-technical-notes)  
-[2.1 Files.Walk() alternative](#21-fileswalk-alternative)  
-[2.2 Dependencies](#22-dependencies)  
-  
-  
+	[2.1 Files.Walk() alternative](#21-fileswalk-alternative)  
+	[2.2 Dependencies](#22-dependencies)  
 [3 Use Typora](#3-use-typora)  
-[3.1 How to configure](#31-how-to-configure)  
-[3.1.1 Store images in the right folder](#311-store-images-in-the-right-folder)  
-[3.1.2 A Css template for chapter numbering](#312-a-css-template-for-chapter-numbering)  
-  
-  
-[3.2 Typical workflow](#32-typical-workflow)  
-
-
-
+	[3.1 How to configure](#31-how-to-configure)  
+		[3.1.1 Store images in the right folder](#311-store-images-in-the-right-folder)  
+		[3.1.2 A Css template for chapter numbering](#312-a-css-template-for-chapter-numbering)  
+	[3.2 Typical workflow](#32-typical-workflow)  
 
 ## 1.1 About
 
@@ -31,23 +23,23 @@ This little tool produces a nice **README.md** for your Github repository given 
 ## 1.2 Usage
 
 ```
-    >java -jar latexMarkdown2Markdown-1.0-SNAPSHOT.jar
+>java -jar latexMarkdown2Markdown-1.0-SNAPSHOT.jar
     
-    The following option is required: [-dir]
-    Usage: <main class> [options]
-      Options:
-        -background
-          Force the background color in hexa #rrggbb instead of a transparent
-          background
-    
-      * -dir
-        directory where *.tex.md files are
-        -toc
-          generate a table of content and add numbers to chapters
-          Default: false
+The following option is required: [-dir]
+Usage: <main class> [options]
+  Options:
+    -background
+      Force the background color in hexa #rrggbb instead of a transparent 
+      background 
+  * -dir
+      directory where *.tex.md files are
+    -tab
+      same has -toc but tabulate the table of content
+      Default: false
+    -toc
+      generate a table of content and add numbers to chapters
+      Default: false
 ```
-
-​    
 
 # 2 Technical notes
 

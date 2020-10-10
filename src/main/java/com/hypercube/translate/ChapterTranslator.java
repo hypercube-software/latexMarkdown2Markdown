@@ -7,12 +7,21 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
+import com.hypercube.GeneratorConfig;
+import com.hypercube.GeneratorConfig.TocType;
+
 public class ChapterTranslator {
 	private Logger logger = Logger.getLogger(ChapterTranslator.class.getName());
 
 	private int currentChapterIndex;
 	private List<Chapter> chapters = new ArrayList<>();
 	private Pattern chapterSection = Pattern.compile("^(#+)\\s+(.+)$");
+	private TocType tocType;
+	
+	public ChapterTranslator(TocType tocType) {
+		super();
+		this.tocType = tocType;
+	}
 
 	public void collectChapters(String line) {
 		Matcher m = chapterSection.matcher(line);
@@ -28,6 +37,9 @@ public class ChapterTranslator {
 		// remove Typora TOC
 		line = line.replace("[TOC]", "");
 
+		if (tocType==TocType.NO_TOC)
+			return line;
+		
 		Matcher m = chapterSection.matcher(line);
 		if (m.matches()) {
 			Chapter ch = chapters.get(currentChapterIndex++);
@@ -42,7 +54,7 @@ public class ChapterTranslator {
 	}
 
 	public String buildTableOfContent() {
-		if (chapters.size() == 0)
+		if (chapters.size() == 0 || tocType==TocType.NO_TOC)
 			return "";
 
 		Chapter firstChapter = chapters.get(0);
@@ -68,12 +80,17 @@ public class ChapterTranslator {
 				.forEach(chIdx -> {
 					Chapter ch = chapters.get(chIdx);
 					logger.info(ch.getNumberedTitle());
+					if (tocType==TocType.TAB_TOC)
+					{
+						for (int i=0;i<ch.getHeader().length()-1;i++)
+							toc.append('\t');
+					}
 					if (chIdx == 0) {
 						toc.append("[" + ch.getNumberedTitle() + "]");
 						toc.append("(#" + ch.getTitleAnchor() + ")");
 						toc.append("  \n"); // force newline
 					} else {
-						if (ch.isNewSection()) {
+						if (ch.isNewSection() && tocType!=TocType.TAB_TOC) {
 							toc.append("  \n"); // force newline
 							toc.append("  \n"); // force newline
 						}
