@@ -10,23 +10,23 @@ This little tool produces a nice **README.md** for your Github repository given 
 ## Usage
 
 ```
-    >java -jar latexMarkdown2Markdown-1.0-SNAPSHOT.jar
+>java -jar latexMarkdown2Markdown-1.0-SNAPSHOT.jar
     
-    The following option is required: [-dir]
-    Usage: <main class> [options]
-      Options:
-        -background
-          Force the background color in hexa #rrggbb instead of a transparent
-          background
-    
-      * -dir
-        directory where *.tex.md files are
-        -toc
-          generate a table of content and add numbers to chapters
-          Default: false
+The following option is required: [-dir]
+Usage: <main class> [options]
+  Options:
+    -background
+      Force the background color in hexa #rrggbb instead of a transparent 
+      background 
+  * -dir
+      directory where *.tex.md files are
+    -tab
+      same has -toc but tabulate the table of content
+      Default: false
+    -toc
+      generate a table of content and add numbers to chapters
+      Default: false
 ```
-
-​    
 
 # Technical notes
 

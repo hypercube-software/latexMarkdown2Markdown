@@ -14,6 +14,13 @@ public class CommandLine {
 	@Parameter(names = { "-toc" }, description = "generate a table of content and add numbers to chapters", required = false)
 	private boolean generateToc;
 
+	@Parameter(names = { "-tab" }, description = "same has -toc but tabulate the table of content ", required = false)
+	private boolean generateTabulatedToc;
+	
+	public boolean isGenerateTabulatedToc() {
+		return generateTabulatedToc;
+	}
+
 	public boolean isGenerateToc() {
 		return generateToc;
 	}

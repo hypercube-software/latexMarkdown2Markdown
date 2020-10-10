@@ -31,6 +31,7 @@ import org.scilab.forge.jlatexmath.TeXIcon;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 
+import com.hypercube.GeneratorConfig.TocType;
 import com.hypercube.translate.ChapterTranslator;
 
 public class LatexMarkdown2Markdown {
@@ -85,8 +86,14 @@ public class LatexMarkdown2Markdown {
 		initLogs();
 		CommandLine cm = new CommandLine();
 		if (cm.parse(args)) {
+			TocType tocType = TocType.NO_TOC;
+			if (cm.isGenerateTabulatedToc())
+				tocType = TocType.TAB_TOC;
+			else if (cm.isGenerateToc())
+				tocType = TocType.TOC;
+			
 			LatexMarkdown2Markdown lm2m = new LatexMarkdown2Markdown(
-					new GeneratorConfig(cm.getBackground(), cm.isGenerateToc(), 0));
+					new GeneratorConfig(cm.getBackground(), tocType, 0));
 			lm2m.start(Path.of(cm.getBaseDir()));
 		}
 	}
@@ -111,7 +118,7 @@ public class LatexMarkdown2Markdown {
 			logger.info("Generate " + destPath.toString());
 
 			try (PrintWriter pw = new PrintWriter(Files.newBufferedWriter(destPath))) {
-				ChapterTranslator ct = new ChapterTranslator();
+				ChapterTranslator ct = new ChapterTranslator(config.getTocType());
 				//
 				// first pass, collect chapters and compute their numbers
 				//
