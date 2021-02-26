@@ -27,7 +27,7 @@ public class ChapterCounter {
 			}
 			counters.set(index, counters.get(index) + 1);
 		} else {
-			throw new RuntimeException("Chapter depth is wrong for: \"" + chapter + "\"");
+			throw new RuntimeException("Chapter depth is wrong for: \"" + chapter + "\" at line " + chapter.getLine());
 		}
 	}
 

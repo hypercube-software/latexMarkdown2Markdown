@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -91,10 +92,16 @@ public class LatexMarkdown2Markdown {
 				tocType = TocType.TAB_TOC;
 			else if (cm.isGenerateToc())
 				tocType = TocType.TOC;
-			
+
 			LatexMarkdown2Markdown lm2m = new LatexMarkdown2Markdown(
 					new GeneratorConfig(cm.getBackground(), tocType, 0));
-			lm2m.start(Path.of(cm.getBaseDir()));
+			if (cm.getInputFile() != null) {
+				lm2m.parseTexMarkdow(Path.of(cm.getInputFile()));
+			} else if (cm.getBaseDir() != null) {
+				lm2m.start(Path.of(cm.getBaseDir()));
+			} else {
+				cm.showUsage();
+			}
 		}
 	}
 
@@ -114,34 +121,60 @@ public class LatexMarkdown2Markdown {
 	private void parseTexMarkdow(Path srcPath) {
 		try {
 			Path destPath = buildDestPath(srcPath);
-
-			logger.info("Generate " + destPath.toString());
-
-			try (PrintWriter pw = new PrintWriter(Files.newBufferedWriter(destPath))) {
+			Path tmpPath = destPath;
+			if (destPath.equals(srcPath)) {
+				tmpPath = buildTmpDestPath(srcPath);
+				logger.info("Update " + destPath.toString());
+			} else {
+				logger.info("Generate " + destPath.toString());
+			}
+			try (PrintWriter pw = new PrintWriter(Files.newBufferedWriter(tmpPath))) {
 				ChapterTranslator ct = new ChapterTranslator(config.getTocType());
 				//
 				// first pass, collect chapters and compute their numbers
 				//
+				AtomicInteger lineNumber = new AtomicInteger();
 				try (Stream<String> stream = Files.lines(srcPath)) {
-					stream.forEach(ct::collectChapters);
+					stream.forEach(l -> ct.collectChapters(lineNumber.incrementAndGet(), l));
 				}
-				//
-				// generate TOC
-				//
-				pw.append(ct.buildTableOfContent());
+
 				//
 				// second pass, translate chapters and latex
 				//
+				lineNumber.set(0);
 				try (Stream<String> stream = Files.lines(srcPath)) {
-					stream.map(ct::translateLine)
+					stream.map(l -> ct.translateLine(lineNumber.incrementAndGet(), l))
 							.filter(l -> l != null)
 							.map(line -> translateLatexSections(srcPath, line))
-							.forEach(pw::println);
+							.forEach(l -> {
+								pw.println(l);
+								pw.flush();
+							});
 				}
+			}
+			if (destPath.equals(srcPath)) {
+				renameTmpDestPath(tmpPath, srcPath);
 			}
 		} catch (IOException e) {
 			logger.log(Level.SEVERE, "Unexpected error", e);
 		}
+	}
+
+	private void renameTmpDestPath(Path tmpPath, Path destPath) throws IOException {
+		if (!destPath.toFile()
+				.delete()) {
+			throw new IOException("Unable to delete " + destPath);
+		}
+		if (!tmpPath.toFile()
+				.renameTo(destPath.toFile())) {
+			throw new IOException("Unable to rename " + tmpPath + " to " + destPath);
+		}
+	}
+
+	private Path buildTmpDestPath(Path srcPath) {
+		Path tmpPath;
+		tmpPath = Path.of(srcPath + ".tmp.md");
+		return tmpPath;
 	}
 
 	private String translateLatexSections(Path srcPath, String line) {

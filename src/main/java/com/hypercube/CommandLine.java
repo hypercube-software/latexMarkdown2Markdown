@@ -8,15 +8,23 @@ public class CommandLine {
 			"-background" }, description = "Force the background color in hexa #rrggbb instead of a transparent background", required = false)
 	private String background;
 
-	@Parameter(names = { "-dir" }, description = "directory where *.tex.md files are", required = true)
+	@Parameter(names = { "-dir" }, description = "directory where *.tex.md files are", required = false)
 	private String baseDir;
-	
-	@Parameter(names = { "-toc" }, description = "generate a table of content and add numbers to chapters", required = false)
+
+	@Parameter(names = { "-file" }, description = "markdown file to process", required = false)
+	private String inputFile;
+
+	@Parameter(names = {
+			"-toc" }, description = "generate a table of content and add numbers to chapters", required = false)
 	private boolean generateToc;
 
 	@Parameter(names = { "-tab" }, description = "same has -toc but tabulate the table of content ", required = false)
 	private boolean generateTabulatedToc;
-	
+
+	public String getInputFile() {
+		return inputFile;
+	}
+
 	public boolean isGenerateTabulatedToc() {
 		return generateTabulatedToc;
 	}
@@ -45,5 +53,10 @@ public class CommandLine {
 			return false;
 		}
 		return true;
+	}
+
+	void showUsage() {
+		JCommander parser = new JCommander(this);
+		parser.usage();
 	}
 }
