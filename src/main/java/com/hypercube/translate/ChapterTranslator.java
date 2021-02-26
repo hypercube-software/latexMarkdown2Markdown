@@ -7,7 +7,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
-import com.hypercube.GeneratorConfig;
 import com.hypercube.GeneratorConfig.TocType;
 
 public class ChapterTranslator {
@@ -17,35 +16,63 @@ public class ChapterTranslator {
 	private List<Chapter> chapters = new ArrayList<>();
 	private Pattern chapterSection = Pattern.compile("^(#+)\\s+(.+)$");
 	private TocType tocType;
-	
+	private boolean inCodeBlock = false;
+	private boolean inTOC = false;
+
 	public ChapterTranslator(TocType tocType) {
 		super();
 		this.tocType = tocType;
 	}
 
-	public void collectChapters(String line) {
+	public void collectChapters(int lineNumber, String line) {
+		if (!inCodeBlock && line.startsWith("```"))
+			inCodeBlock = true;
+		else if (inCodeBlock && line.startsWith("```"))
+			inCodeBlock = false;
+
+		if (!inTOC && line.startsWith("# Table of content"))
+			inTOC = true;
+		else if (inTOC && line.startsWith("#"))
+			inTOC = false;
+
 		Matcher m = chapterSection.matcher(line);
-		if (m.matches()) {
+		if (!inCodeBlock && !inTOC && lineNumber > 1 && m.matches()) {
 			String header = m.group(1);
 			String chapter = m.group(2);
 
-			chapters.add(new Chapter(header, chapter));
+			chapters.add(new Chapter(lineNumber, header, chapter));
 		}
+
 	}
 
-	public String translateLine(String line) {
-		// remove Typora TOC
-		line = line.replace("[TOC]", "");
+	public String translateLine(int lineNumber, String line) {
+		if (!inCodeBlock && line.startsWith("```"))
+			inCodeBlock = true;
+		else if (inCodeBlock && line.startsWith("```"))
+			inCodeBlock = false;
 
-		if (tocType==TocType.NO_TOC)
+		// handle our own TOC (doc update)
+		if (!inTOC && line.startsWith("# Table of content")) {
+			inTOC = true;
+			return null;
+		} else if (inTOC && line.startsWith("#")) {
+			inTOC = false;
+			return buildTableOfContent() + translateLine(lineNumber, line);
+		} else if (inTOC) {
+			return null;
+		}
+
+		// handle Typora TOC
+		if (!inCodeBlock && line.indexOf("[TOC]") != -1)
+			return buildTableOfContent();
+
+		// first line is supposed to be the document title
+		if (lineNumber == 1)
 			return line;
-		
-		Matcher m = chapterSection.matcher(line);
-		if (m.matches()) {
-			Chapter ch = chapters.get(currentChapterIndex++);
 
-			if (currentChapterIndex == 1)
-				return null;
+		Matcher m = chapterSection.matcher(line);
+		if (!inCodeBlock && lineNumber > 1 && m.matches()) {
+			Chapter ch = chapters.get(currentChapterIndex++);
 
 			return ch.getHeader() + " " + ch.getNumberedTitle();
 		} else {
@@ -54,10 +81,9 @@ public class ChapterTranslator {
 	}
 
 	public String buildTableOfContent() {
-		if (chapters.size() == 0 || tocType==TocType.NO_TOC)
+		if (chapters.size() == 0 || tocType == TocType.NO_TOC)
 			return "";
 
-		Chapter firstChapter = chapters.get(0);
 		ChapterCounter chapterCounter = new ChapterCounter();
 		for (Chapter ch : chapters) {
 			chapterCounter.onNewMarkdownChapter(ch);
@@ -71,8 +97,7 @@ public class ChapterTranslator {
 		}
 
 		StringBuffer toc = new StringBuffer();
-		toc.append("# " + firstChapter.getTitle() + "\n");
-		toc.append("**Table of content**")
+		toc.append("# Table of content")
 				.append("\n")
 				.append("\n");
 
@@ -80,9 +105,9 @@ public class ChapterTranslator {
 				.forEach(chIdx -> {
 					Chapter ch = chapters.get(chIdx);
 					logger.info(ch.getNumberedTitle());
-					if (tocType==TocType.TAB_TOC)
-					{
-						for (int i=0;i<ch.getHeader().length()-1;i++)
+					if (tocType == TocType.TAB_TOC) {
+						for (int i = 0; i < ch.getHeader()
+								.length() - 1; i++)
 							toc.append("&nbsp;&nbsp;&nbsp;&nbsp;");
 					}
 					if (chIdx == 0) {
@@ -90,7 +115,7 @@ public class ChapterTranslator {
 						toc.append("(#" + ch.getTitleAnchor() + ")");
 						toc.append("  \n"); // force newline
 					} else {
-						if (ch.isNewSection() && tocType!=TocType.TAB_TOC) {
+						if (ch.isNewSection() && tocType != TocType.TAB_TOC) {
 							toc.append("  \n"); // force newline
 							toc.append("  \n"); // force newline
 						}
