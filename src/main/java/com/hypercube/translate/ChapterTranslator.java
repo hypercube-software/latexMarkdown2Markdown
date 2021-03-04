@@ -18,6 +18,7 @@ public class ChapterTranslator {
 	private TocType tocType;
 	private boolean inCodeBlock = false;
 	private boolean inTOC = false;
+	private boolean TOCGenerated = false;
 
 	public ChapterTranslator(TocType tocType) {
 		super();
@@ -72,29 +73,26 @@ public class ChapterTranslator {
 
 		Matcher m = chapterSection.matcher(line);
 		if (!inCodeBlock && lineNumber > 1 && m.matches()) {
+			String result = "";
+
+			if (!TOCGenerated) {
+				result += buildTableOfContent();
+			}
 			Chapter ch = chapters.get(currentChapterIndex++);
 
-			return ch.getHeader() + " " + ch.getNumberedTitle();
+			result += ch.getHeader() + " " + ch.getNumberedTitle();
+
+			return result;
 		} else {
 			return line;
 		}
 	}
 
 	public String buildTableOfContent() {
+		TOCGenerated = true;
+
 		if (chapters.size() == 0 || tocType == TocType.NO_TOC)
 			return "";
-
-		ChapterCounter chapterCounter = new ChapterCounter();
-		for (Chapter ch : chapters) {
-			chapterCounter.onNewMarkdownChapter(ch);
-
-			if ((chapterCounter.getPreviousDepth() > 2 && chapterCounter.getCurrentDepth() == 2)
-					|| (chapterCounter.getPreviousDepth() > 1 && chapterCounter.getCurrentDepth() == 1)) {
-				ch.setNewSection(true);
-			}
-
-			ch.setNumberedTitle(chapterCounter.getCurrentState() + " " + ch.getTitle());
-		}
 
 		StringBuffer toc = new StringBuffer();
 		toc.append("# Table of content")
@@ -126,5 +124,19 @@ public class ChapterTranslator {
 				});
 
 		return toc.toString();
+	}
+
+	public void numberChapters() {
+		ChapterCounter chapterCounter = new ChapterCounter();
+		for (Chapter ch : chapters) {
+			chapterCounter.onNewMarkdownChapter(ch);
+
+			if ((chapterCounter.getPreviousDepth() > 2 && chapterCounter.getCurrentDepth() == 2)
+					|| (chapterCounter.getPreviousDepth() > 1 && chapterCounter.getCurrentDepth() == 1)) {
+				ch.setNewSection(true);
+			}
+
+			ch.setNumberedTitle(chapterCounter.getCurrentState() + " " + ch.getTitle());
+		}
 	}
 }
