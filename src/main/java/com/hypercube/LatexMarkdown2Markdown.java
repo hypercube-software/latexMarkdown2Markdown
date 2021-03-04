@@ -138,6 +138,8 @@ public class LatexMarkdown2Markdown {
 					stream.forEach(l -> ct.collectChapters(lineNumber.incrementAndGet(), l));
 				}
 
+				ct.numberChapters();
+
 				//
 				// second pass, translate chapters and latex
 				//
